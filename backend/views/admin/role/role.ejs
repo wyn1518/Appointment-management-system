@@ -1,0 +1,197 @@
+
+<div class="w-full max-w-7xl mx-auto" x-data="{action:''}" >
+   
+    <div class="flex w-full md:flex-row flex-col justify-between md:items-center   gap-2 mb-3 p-2 bg-base-300 rounded-md">
+
+        <form action="/admin/roles/input/srch" method="POST" class="flex items-center  gap-2 m-0   w-full md:max-w-xs  ">
+            <label class="input input-bordered flex w-full items-center gap-2 ">
+                <input type="text" class="grow" placeholder="Search name" name="srch" value="<%= admin.roles.input.srch %>" />
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 16 16"
+                    fill="currentColor"
+                    class="h-4 w-4 opacity-70">
+                    <path
+                    fill-rule="evenodd"
+                    d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
+                    clip-rule="evenodd" />
+                </svg>
+            </label>
+        </form>
+        <div class="flex items-center  gap-2    w-full md:max-w-sm  ">
+            <select x-model="action" class="select border border-base-300 w-full">
+                <option value="/" selected="selected" >--Select action--</option>
+                <option value="/admin/roles/delete">Delete selected roles</option>
+            </select>
+            <button type="submit" class="btn bg-base-100 border border-base-300 btn-square" x-on:click="$dispatch('send-selected-roles')">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                    </svg>
+                    
+            </button>
+            <button type="submit" class="btn bg-base-100 border border-base-300 btn-square" onclick="createRoleModal.showModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                    
+                    
+            </button>
+        </div>
+    </div>
+    
+    <% if(Object.keys( admin.roles.roles).length > 0){ %>
+        <form x-bind:action="action" method="POST" x-on:send-selected-roles.window="$el.submit()"  class="bg-base-100 rounded-box border border-base-300 overflow-x-auto" >
+            <table class="w-full table min-w-max">
+                <thead>
+                  <tr>
+                    <th>
+                        name
+                    </th>
+                    <th class="text-end">permission</th>
+                  </tr>
+                </thead>
+                <tbody>
+                    <% for(const role of admin.roles.roles){ %>
+                        
+                        <tr>
+                            <td>
+                                <div class="flex  gap-3 justify-start h-full">
+                                    
+                                    <input type="checkbox" name="slctdRoles[]"  value="<%= role.name %>" class="checkbox checkbox-sm">
+                                 
+                                    <button x-on:click.stop.prevent="$dispatch('open-edit-role-modal',{name:'<%= role.name %>',permission:<%= JSON.stringify(role.permission) %>})"><%= role.name %></button>
+                                </div> 
+                            </td>
+                            <td class="">
+                                <ul class="flex items-center justify-end gap-1 overflow-x-auto ">
+                                    <% for(const permission of role.permission){ %>
+                                        <li ><span class="badge badge-sm badge-ghost text-nowrap"><%= permission %></span></li>    
+                                    <% } %>
+                                </ul>
+                            </td>
+                            
+                        </tr>
+                    <% }  %>
+
+                </tbody>
+            </table>
+        </form>
+        
+     
+    
+    <% } %>
+    <form method="post" x-data="{page:<%= admin.roles.input.page %>}" action="/admin/roles/input/page" class="flex items-center gap-3 justify-end">
+        <input type="hidden" name="page" x-model="page">
+        <button type="submit" x-on:click="page = Math.max(1,page-1)" class="btn  btn-square  bg-base-100 " >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+            </svg>
+            
+        </button>
+        <div class="btn btn-square btn-ghost">
+            <%= admin.roles.input.page %>
+        </div>
+        <button type="submit"  x-on:click="page = page+1" class="btn   btn-square bg-base-100 ">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+            </svg>
+            
+        </button>
+    </form> 
+</div>
+
+<dialog id="createRoleModal" class="modal p-3 ">
+    <div class="modal-box w-full max-w-md " >
+        <form method="dialog" class="m-0  w-full ">
+            
+            <button class="btn  btn-circle btn-sm btn-ghost absolute right-2 top-2" onclick="createRoleModal.close()">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+                
+            </button>
+        </form>
+        
+        <h1 class="font-bold w-full text-xl"> Adding new role</h1>
+        <form action="/admin/roles/create" method="POST" class="w-full m-0">
+            <label class="form-control w-full mb-3">
+                <div class="label">
+                    <span class="label-text">Name</span>
+                </div>
+                <input type="text" placeholder="Input name" name="name"  class="input input-bordered w-full " />
+             
+
+                
+            </label>
+            <ul class="space-y-2 mb-3">
+                <% for(let [permission,value] of Object.entries(admin.roles.permissions)){ %>
+                    <li >
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" name="permission[]" value="<%= permission %>" class="checkbox checkbox-sm">
+                            <p class=""><%= value.description %></p>
+                        
+                        </label>
+                    </li>
+                <% } %>
+            </ul>
+            <table class="[&_tr]:border-none table table-sm">
+                <tbody>
+                    
+                   
+                </tbody>
+            </table>
+            <div class="flex justify-end">
+                
+                <button type="submit" class="btn  btn-success">Add new role</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+<dialog x-data="{name:'',permission:[]}" x-on:open-edit-role-modal.window="$el.showModal();name = $event.detail.name;permission=$event.detail.permission;" class="modal p-3 ">
+    <div class="modal-box w-full max-w-md " >
+        <form method="dialog" class="m-0  w-full ">
+            
+            <button class="btn  btn-circle btn-sm btn-ghost absolute right-2 top-2" onclick="createRoleModal.close()">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+                
+            </button>
+        </form>
+        
+        <h1 class="font-bold w-full text-xl"> Editing role</h1>
+        <form action="/admin/roles/update" method="POST" class="w-full m-0">
+            <label class="form-control w-full mb-3">
+                <div class="label">
+                    <span class="label-text">Name</span>
+                </div>
+                <input type="text" disabled placeholder="Input name" x-bind:value="name" class="input-disabled input input-bordered w-full " />
+                <input type="hidden" placeholder="Input name" x-model="name" name="name"   />
+             
+
+                
+            </label>
+            <ul class="space-y-2 mb-3">
+                <% for(let [permission,value] of Object.entries(admin.roles.permissions)){ %>
+                    <li >
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" name="permission[]" x-bind:checked="permission.includes('<%= permission %>')" value="<%= permission %>" class="checkbox checkbox-sm">
+                            <p class=""><%= value.description %></p>
+                        
+                        </label>
+                    </li>
+                <% } %>
+            </ul>
+            <table class="[&_tr]:border-none table table-sm">
+                <tbody>
+                    
+                   
+                </tbody>
+            </table>
+            <div class="flex justify-end">
+                
+                <button type="submit" class="btn  btn-success">Save new info</button>
+            </div>
+        </form>
+    </div>
+</dialog>

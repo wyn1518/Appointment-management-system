@@ -1,0 +1,139 @@
+
+<div class="w-full max-w-7xl mx-auto" x-data="{action:''}"> 
+    <div class="flex w-full lg:flex-row flex-col justify-between lg:items-center   gap-2 mb-3 p-2 bg-base-300 rounded-md">
+
+        <form x-ref="filterForm" action="/admin/schedule/input/srch" method="POST" class="flex items-center  gap-2 m-0   w-full lg:max-w-[300px]  ">
+            <div class="join max-lg:join-vertical w-full ">
+          
+                <%
+                    const minYear = 2024;
+                    const maxYear = 2050;
+                    const range = 9;
+
+                    const chosenYear = admin.schedule.input.year;
+                    let cursor = Math.max(minYear,chosenYear-range);
+                    const end = Math.min(maxYear,chosenYear+range);
+                %>
+                
+                <select x-on:change="$refs.filterForm.submit()"  name="month" value="<%= admin.schedule.input.month %>" class="select select-bordered join-item min-w-32 ">
+                    <option value='0'  <%= 0 ==  admin.schedule.input.month?'selected':'' %>>January</option>
+                    <option value='1'  <%= 1 ==  admin.schedule.input.month?'selected':'' %>>February</option>
+                    <option value='2'  <%= 2 ==  admin.schedule.input.month?'selected':'' %>>March</option>
+                    <option value='3'  <%= 3 ==  admin.schedule.input.month?'selected':'' %>>April</option>
+                    <option value='4'  <%= 4 ==  admin.schedule.input.month?'selected':'' %>>May</option>
+                    <option value='5'  <%= 5 ==  admin.schedule.input.month?'selected':'' %>>June</option>
+                    <option value='6'  <%= 6 ==  admin.schedule.input.month?'selected':'' %>>July</option>
+                    <option value='7'  <%= 7 ==  admin.schedule.input.month?'selected':'' %>>August</option>
+                    <option value='8'  <%= 8 ==  admin.schedule.input.month?'selected':'' %>>September</option>
+                    <option value='9'  <%= 9 ==  admin.schedule.input.month?'selected':'' %>>October</option>
+                    <option value='10' <%= 10 == admin.schedule.input.month?'selected':'' %>>November</option>
+                    <option value='11' <%= 11 == admin.schedule.input.month?'selected':'' %>>December</option>
+                </select> 
+
+                <select value="<%= admin.schedule.input.year %>" name="year"  x-on:change="$refs.filterForm.submit()"  class="select select-bordered join-item min-w-28 ">
+                    <%  for(;cursor <= end;cursor++){ %>
+                        <option value="<%= cursor %>" <%= cursor == admin.schedule.input.year?'selected':'' %>><%= cursor %></option>
+                    <% } %>    
+                </select> 
+            </div>
+            
+        </form>
+        <div class="flex items-center  gap-2    w-full lg:max-w-xs  ">
+           
+            <select x-model="action" class="select border border-base-300 w-full">
+                <option value="/" selected="selected" >--Select action--</option>
+                <option value="/admin/visit/schedule/update/availability">Update selected schedules appointment</option>
+                
+                <option value="/admin/visit/schedule/delete">Set selected schedules to default</option>
+            </select>
+            <button type="submit" class="btn bg-base-100 border border-base-300 btn-square" x-on:click="$dispatch('send-selected-appointment')">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                    </svg>
+                    
+            </button>
+            
+        </div>
+    </div>
+    <div class=" mb-1 flex gap-3 text-xs">
+        <div> <div aria-label="success" class="status status-success mr-1"></div> Available</div>
+        <div> <div aria-label="success" class="status status-error mr-1"></div> Unavailable</div>
+        
+        <div> <div aria-label="success" class="status  mr-1"></div> Default</div>
+    </div>
+    <form x-bind:action="action" method="POST" x-on:send-selected-appointment.window="$el.submit()"  class="bg-base-100 rounded-box border border-base-300 overflow-x-auto" x-data="{slctdAcct:0}">
+        <table class="w-full  table table-sm [&_tr]:border-none">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% for(const [date,value] of Object.entries(admin.schedule.schedules)){ %>
+                    <tr >
+                        <td>
+                            <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-3 ">
+                                
+                                    <% if(value.holiday === null){ %>
+                                        <input  type="checkbox" name="slctdSchedules[]"  value="<%= date %>" class="checkbox checkbox-sm">
+                                    
+                                    <% } %>
+                                    <% if(value.holiday !== null){ %>
+                                        <span class="badge badge-soft badge-sm badge-error"><%= value.holiday %></span>
+                                    <% } %>
+                                    <span>
+                                        <%= (new Date(date)).toLocaleDateString("en-US", {
+                                            weekday: "long",
+                                            year: "numeric",
+                                            month: "long",
+                                            day: "numeric",
+                                        })%>
+                                        <!-- toLocaleDateString(locale, {  }) -->
+                                    </span>
+                                    <% if(value.inRange){ %>
+                                        <div class=" text-base-content">
+                                            <svg title="in range" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 2.994v2.25m10.5-2.25v2.25m-14.252 13.5V7.491a2.25 2.25 0 0 1 2.25-2.25h13.5a2.25 2.25 0 0 1 2.25 2.25v11.251m-18 0a2.25 2.25 0 0 0 2.25 2.25h13.5a2.25 2.25 0 0 0 2.25-2.25m-18 0v-7.5a2.25 2.25 0 0 1 2.25-2.25h13.5a2.25 2.25 0 0 1 2.25 2.25v7.5m-6.75-6h2.25m-9 2.25h4.5m.002-2.25h.005v.006H12v-.006Zm-.001 4.5h.006v.006h-.006v-.005Zm-2.25.001h.005v.006H9.75v-.006Zm-2.25 0h.005v.005h-.006v-.005Zm6.75-2.247h.005v.005h-.005v-.005Zm0 2.247h.006v.006h-.006v-.006Zm2.25-2.248h.006V15H16.5v-.005Z" />
+                                            </svg>
+                                        </div>
+                                       
+                                          
+                                    <% } %>
+                                    <% if(value.holiday === null){ %>
+                                        <% if(value.default){ %>
+                                            <div aria-label="success" class="status"></div>
+                                        <% } %>
+                                        <% if(value.isAvailable){ %>
+                                            <div aria-label="success" class="status status-success"></div>
+                                        <% }else{ %>
+                                            <div aria-label="error" class="status status-error"></div>
+                                        <% } %>
+                                    <% } %>
+                                </div>
+                                
+                                
+                            </div>
+                            
+                        </td>
+                    </tr>
+                <% } %>
+
+            </tbody>
+        </table>
+    </form>
+</div>
+<dialog x-data="{}" x-on:edit-schedule-modal.window="$el.show();" class="modal">
+    
+    <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+    </form>
+    <div class="modal-box">
+        <form method="dialog">
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        </form>
+        <form action="/admin/visit/appointment/update" method="POST" class=" p-0 m-0 " >
+           
+        </form>
+    </div>
+</dialog>

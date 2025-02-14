@@ -1,0 +1,202 @@
+
+<%- include('./../partials/head') -%>
+<div class="min-h-screen  bg-base-200 mx-auto  px-6 py-8  flex flex-col gap-4 items-center justify-center">
+   
+    <img src="/images/muba-nobg.png" alt="" class="w-[min(60%,200px)]  mx-auto">
+    <form action="/appointment/input/final" method="post"  class="w-full max-w-md mx-auto max-h-fit  bg-base-100 shadow p-8 rounded-box m-0"  x-data="{members:[],stringMems:'[]',time:'',maxVisitors:0}">
+       
+        <p class="text-sm text-base-content/25 leading-none"> Chosen month, day, and year:</p>
+        <h1 class="font-bold text-lg  mb-4">
+            <%= [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ][appointment.input.month] %> <%= appointment.input.day %> <%= appointment.input.year %>
+        </h1>
+       
+        <input type="text" class="hidden" name="time" x-model="time">
+        <input type="text" class="hidden" name="members" x-model="stringMems">
+        <div class="w-full min-w-full">
+            <div class="grid gap-1 grid-rows-[auto_auto_1fr] w-full " x-data="{first_name:'',last_name:'',middle_name:'',gender:'m',notify:''}">
+                
+                <div role="alert" class="alert alert-error alert-soft" x-show="notify.length > 0">
+                    <span x-text="notify">Error! Task failed successfully.</span>
+                </div>
+                <div class="overflow-y-scroll border border-base-300 rounded-md p-1 min-h-72 max-h-72 w-full ">
+                    <table class="text-sm  w-full">
+                        <thead>
+                            <tr>
+                                <th class="text-sm font-semibold text-base-content/30 px-2 text-start">
+                                    <div class="flex items-center justify-between">
+                                        <span>name</span>
+                                        <span>gender</span>
+                                    </div>
+                                
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template x-for="(member, index) in members">
+                                <tr>
+                                    <td>
+                                        <div class="grid  grid-cols-[1fr_auto_auto] gap-1 rounded-md w-full items-center px-1 py-1  ">
+                                            <span x-text="member.name" class="truncate overflow-clip" ></span>
+                                            
+                                            
+                                            <span x-text="member.gender =='m' ?'male':'female'" class="px-2 rounded-md font-semibold py-0.5" x-bind:class="member.gender == 'm'?'bg-blue-600/25 text-blue-600':'bg-pink-600/25 text-pink-600'"></span>
+                                            <button class="btn btn-xs btn-square " x-on:click.stop.prevent="members.splice(index,1);memberStringfy=JSON.stringify(members)">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                                  </svg>
+                                                  
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="grid grid-cols-[1fr_auto] min-w-full  gap-1" >
+                    
+                    <label class="input col-span-2 w-full">
+                        <span class="label w-[80px]">first&nbsp;&nbsp;</span>
+                        <input class="" x-on:change="notify=''" placeholder="Input here" x-model="first_name" />
+                    
+                    </label>
+                    <label class="input  col-span-2 w-full">
+                        <span class="label w-[68px]">middle</span>
+                        <input x-on:change="notify=''" placeholder="Input here" x-model="middle_name" />
+                    
+                    </label>
+                    <label class="input  col-span-2 w-full">
+                        <span class="label w-[80px]">last&nbsp;&nbsp;</span>
+                        <input  x-on:change="notify=''" placeholder="Input here" x-model="last_name" />
+                    
+                    
+                    </label>
+                    <select class="select w-full join-item  select-bordered" x-model="gender">
+                        <option selected value="m">male</option>
+                        <option value="f">female</option>
+                    </select>
+                    <button class="btn btn-ghost btn-square border " x-on:click.stop.prevent="
+                        notify='';
+                        if(maxVisitors - members.length <= 0){
+                            notify='Available slots fully occupied.';
+                        }else{
+                            if(first_name.length == 0 || last_name.length == 0){
+                                notify='Empty first/last name.'
+                            }else{  
+                                let found = false;
+                                first_name = String(first_name).charAt(0).toUpperCase() + String(first_name).slice(1);
+                                last_name = String(last_name).charAt(0).toUpperCase() + String(last_name).slice(1);
+                                middle_name = String(middle_name).charAt(0).toUpperCase() + String(middle_name).slice(1);
+                                
+                                const input =first_name +(middle_name.length > 0?' ':'')+middle_name+' ' + last_name;
+
+                                for(let i = 0;i < members.length;i++){
+                                    const recorded=   members[i].name;
+                                    if((recorded == input)){
+                                        found = true;
+                                        break;
+                                    }
+                                }
+                                
+                                
+                                if(found){
+                                    notify='Duplicate entry.';
+                                }else{
+                                    members.push({name:input,gender:gender}); 
+                                }
+                                first_name='';
+                                last_name='';
+                                middle_name='';
+                            }
+                        }
+                        
+                    ">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                            <path fill-rule="evenodd" d="M12 3.75a.75.75 0 0 1 .75.75v6.75h6.75a.75.75 0 0 1 0 1.5h-6.75v6.75a.75.75 0 0 1-1.5 0v-6.75H4.5a.75.75 0 0 1 0-1.5h6.75V4.5a.75.75 0 0 1 .75-.75Z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+                <fieldset class="fieldset mb-3 w-full">
+                    <legend class="fieldset-legend">Choose your time.</legend>
+                    <select class="select w-full" x-model="time"  x-data="{timeOptions:<%= JSON.stringify(timeOptions) %>}"  x-on:change="notify='';members=[];maxVisitors=timeOptions[time].maxVisitors; console.log(maxVisitors)" >
+                        <option value="0" selected >--select time--</option>
+                        <% for( const key in timeOptions) { %>
+                            <option value="<%= key %>">    
+                                <%= key %>(<%= timeOptions[key].maxVisitors %> available slots)
+                            </option>
+                        <% } %>
+                    </select>
+                </fieldset>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-sm">available slots</span>
+                <span x-text="maxVisitors-members.length" ></span>
+                
+                
+            </div>
+            <div class=" flex justify-end gap-3  mt-2">
+            
+                <a href="/" class="btn  rounded-full btn-square  " >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-6">
+                        <path fill-rule="evenodd" d="M9.293 2.293a1 1 0 0 1 1.414 0l7 7A1 1 0 0 1 17 11h-1v6a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-6H3a1 1 0 0 1-.707-1.707l7-7Z" clip-rule="evenodd" />
+                      </svg>
+                      
+                </a>
+                <a href="/appointment/input/reset" class="btn  rounded-full btn-square  ">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                      </svg>
+                      
+                </a>
+                <button class="btn  btn-success   rounded-full flex-grow" type="submit" x-bind:disabled = "(members.length == 0)" x-on:click="stringMems = JSON.stringify(members)">
+                    Finalize
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </form>
+    <div class="flex items-center gap-3">
+      
+        <a href="/" class="btn  rounded-full btn-square  " >
+            <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            class="fill-current">
+            <path  d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"></path>
+            </svg>
+        </a>
+        <a href="/" class="btn  rounded-full btn-square  " >
+            <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            class="fill-current">
+            <path
+                d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"></path>
+            </svg>
+        </a>
+        <a href="/" class="btn  rounded-full btn-square  " >
+            <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            class="fill-current">
+            <path
+                d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"></path>
+            </svg>
+        </a>
+    </div>
+</div>
+
+
+
+
+</body>
+
+</html>

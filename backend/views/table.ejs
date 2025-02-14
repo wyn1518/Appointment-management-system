@@ -1,0 +1,176 @@
+
+<div x-data="{edit:{name:'',id:'',description:''}}" class="space-y-6">
+    <div class="">
+        <div>
+            <h1 class="text-2xl font-bold">
+                <%= title %>
+            </h1>
+            <p class="text-sm"><%= simpleMessage %></p>
+            
+        </div>
+    </div>
+    <!-- <ul> -->
+
+      <!-- </ul> -->
+    <form class=" flex items-center justify-between  gap-2 mb-6" method="get">
+        <div class="flex items-end gap-2">
+            
+            <label class="input  flex items-center gap-2 w-full">
+                <input type="text" class="grow" placeholder="Search" name="srch" value="<%= srch %>"/>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-5 h-5 opacity-70"><path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd" /></svg>
+            </label>
+            <button class="btn btn-square " type="submit">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                </svg>
+            </button>
+            <button class="btn btn-square btn-accent" x-on:click.prevent="add_modal.showModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                
+            </button>
+        
+        </div>
+        <div class="flex items-center gap-2">
+            <p><%= pagination.offset + 1 %>-<%= Math.min(pagination.offset + pagination.rows,categories.length) %> of 100</p>
+            <div class="join grid grid-cols-3 ">
+                <a href="<%= appendAndGetQry('page',parseInt(pagination.page)-1 >= 0 ? parseInt(pagination.page)-1: 0) %>" class="join-item btn btn-square">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                    </svg>
+                    
+                </a>
+                <div class="join-item btn disabled">
+                    <%= pagination.page %>
+                </div>
+                <a href="<%= appendAndGetQry('page',1+parseInt(pagination.page)) %>" class="join-item btn btn-square ">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                    </svg>
+                    
+                </a>
+            </div>
+          
+        </div>
+    </form>
+    <div class="overflow-scroll">  
+        <table class="  table table-zebra w-full table-sm ">
+            <thead>
+                <tr>
+                    <th>name</th>
+                    <th>
+                        <div class="flex items-center gap-2">   
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                            created at
+                        </div>
+                        
+                    </th>
+                    <th>
+                        <div class="flex items-center gap-2">   
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+                            </svg> 
+                            updated at
+                        </div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                <% for( let category of categories){  %>
+                    
+                    <tr class="" x-on:click="edit_category.showModal(); edit.id=<%= category.id %>; edit.name='<%= category.name %>'; edit.description='<%= category.description %>'; " >
+                        <th class=" w-56 max-w-56 text-ellipsis truncate">
+                            
+                            <%= category.name %>
+                        </th>
+                        <td class="w-80 min-w-80 ">
+                            <label class=" badge badge-neutral gap-2 ">
+                            
+                                <%= humanizeDate(category.createdAt)%>
+                            </label>
+                        </td>
+                        <td class="w-80 min-w-80 ">
+                            <label class="  badge badge-neutral gap-2">
+                                
+                                <%= humanizeDate(category.updatedAt)%>
+                            </label>
+                        </td>
+                    </tr>
+                
+                <% }; %>
+                
+            </tbody>
+        </table>
+    </div>
+
+    <dialog id="add_modal" class="modal">
+        <form class="modal-box  max-w-96 " action="/admin/category/create" method="post">
+                
+            <h3 class="font-bold text-lg">New Category</h3>
+            <label class="form-control w-full ">
+                <div class="label">
+                    <span class="label-text">
+                        
+                        Name
+                    </span>
+                    <!-- <span class="label-text-alt">Top Right label</span> -->
+                </div>
+                <input type="text" name="name" required placeholder="Type here" class="input input-bordered w-full " />
+                <label class="form-control">
+                    <div class="label">
+                    <span class="label-text">Definition</span>
+                    </div>
+                    <textarea class="textarea textarea-bordered h-24" placeholder="" name="description"></textarea>
+                    
+                </label>
+            </label>
+            <div class="modal-action ">
+                <button type="button" class="btn flex-grow" x-on:click.stop="add_modal.close()">cancel</button>
+                <button class="btn btn-accent flex-grow" type="submit"> add</button>
+                
+            </div>
+        </form>
+    </dialog>
+    <dialog id="edit_category" class="modal" x-data="{action:'/admin/category/update'}" >
+        <form class="modal-box  max-w-96"x-bind:action="action" method="post" >
+            <h3 class="font-bold text-lg">Editing category id <span x-text="edit.id">1</span></h3>
+            <input type="hidden" x-bind:value="edit.id" name="id" />
+            <label class="form-control w-full ">
+                <div class="label">
+                    <span class="label-text">name of the category</span>
+                    <!-- <span class="label-text-alt">Top Right label</span> -->
+                </div>
+                <input type="text" name="name" x-bind:value="edit.name" placeholder="Type here" class="input input-bordered w-full " />
+                
+            </label>
+            <label class="form-control">
+                <div class="label">
+                <span class="label-text">Definition</span>
+                </div>
+                <textarea class="textarea textarea-bordered h-24" placeholder="" name="description" x-bind:value="edit.description" ></textarea>
+                
+            </label>
+            <div class="modal-action flex ">
+                <!-- <div> -->
+                <button class="btn flex-grow" type="button" x-on:click.stop="edit_category.close()">cancel</button>
+                
+                <button href="/admin/category/delete/1" class="btn btn-error btn-square" x-on:click="action='/admin/category/delete'">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                        </svg>
+                        
+                </button>
+                <button x-on:click="action='/admin/category/update'" class="btn btn-success btn-square"> 
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                        </svg>
+                        
+                </button>
+        </div>
+        </form>
+    </dialog>
+</div>

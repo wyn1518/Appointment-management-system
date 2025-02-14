@@ -1,0 +1,77 @@
+
+
+<div class=" mx-auto min-h-screen bg-base-300 p-4">
+  <form  method="post" x class="w-full max-w-md mx-auto  bg-base-200 p-6 rounded-box" x-data="{year:'',month:'',day:''}">
+    <% if(typeof chosenDate === 'undefined'){ %>
+      <h1 class="font-bold text-2xl "> Choose a month and year</h1>
+      <input type="hidden" x-bind:value="year" name="year" >
+      <input type="hidden" x-bind:value="month" name="month" >
+      <label class="form-control  w-full max-w-xl">
+        <div class="label">
+          <span class="label-text">Month And Year</span>
+        </div>
+        
+        <select class="select select-bordered bg-base-200" required x-on:change="let value = $el.value.split('-');year = value[0];month = value[1];">
+          <option  selected value="">--select month and year--</option>
+          <% for(const option of monthYearList){ %>
+            <option value="<%=  option.getFullYear()+"-"+(option.getMonth()+1)%>" ><%= option.toLocaleString('default', { month: 'long' }) + " " + option.getFullYear() %></option>
+          <% } %>
+          <option value="2020-1-1">error</option>
+        </select>
+      </label>
+    <% }else{ %> 
+      <h1 class="font-bold text-2xl "> Choose a day from <%= chosenDate.getMonth()  + "-" + chosenDate.getFullYear() %></h1>
+      
+      <input type="hidden" value="<%= chosenDate.year %>" name="year" >
+      <input type="hidden" value="<%= chosenDate.month %>" name="month" >
+      <ul class="grid grid-cols-7  mt-3 w-full gap-1 mx-auto"  >
+        <li class=" flex aspect-square items-center justify-center font-semibold">Su</li>
+        <li class=" flex aspect-square items-center justify-center font-semibold">Mo</li>
+        <li class=" flex aspect-square items-center justify-center font-semibold">Tu</li>
+        <li class=" flex aspect-square items-center justify-center font-semibold">We</li>
+        <li class=" flex aspect-square items-center justify-center font-semibold">Th</li>
+        <li class=" flex aspect-square items-center justify-center font-semibold">Fr</li>
+        <li class=" flex aspect-square items-center justify-center font-semibold">Sa</li>
+        <% for(let i = 0;i < padding;i++){ %>
+          <li></li>  
+        <% } %>
+        
+        <% for(const day of calendar){ %>
+          <li>
+            <% if(!day.isAvailable){ %>
+              <span class="flex items-center justify-center rounded-md p-3  aspect-square border-2 border-base-300  min-w-full min-h-full "><%= day.value.getDate() %></span>
+            <% }else {%>
+                
+                <label class="">
+                  <span class="flex cursor-pointer items-center justify-center rounded-md p-3  aspect-square  border-2 border-success text-success hover:bg-success/20    min-w-full min-h-full "  x-bind:class="day === '<%=  day.value.getDate() %>'?'bg-success/20':''" >
+                    <%= day.value.getDate() %>
+                  </span>
+                  
+                  <input type="radio" class="hidden"  name="day" value="<%= day.value.getDate() %>" x-model="day"  />
+                </label>
+            <% } %>
+          </li>
+                    
+        <% } %>
+      </ul>
+    <% } %>
+    <div class="mt-4 flex justify-end gap-3">
+      
+      <a href="/appointment/resetOption" class="btn  rounded-full max-sm:btn-square px-8" >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+        </svg>
+        
+        <span class="sm:block hidden">reset</span>
+      </a>
+      <button class="btn btn-success text-white rounded-full flex-grow" type="submit">
+        next
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
+        </svg>
+        
+      </button>
+    </div>
+  </form>
+  
+</div>

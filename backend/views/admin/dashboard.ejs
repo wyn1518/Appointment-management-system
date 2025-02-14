@@ -1,0 +1,104 @@
+
+
+<div class="w-full max-w-7xl mx-auto" x-data="{action:''}" >
+
+  <div class="flex flex-col gap-4">
+    <div class="stats bg-base-100">
+      <div class="stat">
+        <div class="stat-figure text-primary">
+          
+        </div>
+        <div class="stat-title">Total male visitors</div>
+        <div class="stat-value text-primary"><%= String(admin.dashboard.stat.male).padStart(5,'0') %></div>
+        <div class="stat-desc"><%= ((admin.dashboard.stat.male/(admin.dashboard.stat.female+admin.dashboard.stat.male))*100 ).toFixed(3) %>%</div>
+      </div>
+    
+      <div class="stat">
+        <div class="stat-figure text-secondary">
+         
+        </div>
+        <div class="stat-title">Page female visitors</div>
+        <div class="stat-value text-secondary"><%= String(admin.dashboard.stat.female).padStart(5,'0') %></div>
+        <div class="stat-desc"><%= ((admin.dashboard.stat.female/(admin.dashboard.stat.female+admin.dashboard.stat.male))*100 ).toFixed(3) %>%</div>
+      </div>
+      <div class="stat">
+        <div class="stat-figure text-secondary">
+         
+        </div>
+        <div class="stat-title">Total appointment</div>
+        
+        <div class="stat-value"><%= String(admin.dashboard.stat.totalAppointment).padStart(5,'0') %></div>
+      
+      </div>
+      
+    </div>
+    <form class="p-4 m-0 overflow-x-scroll" method="POST" x-data action="">
+      <div class="flex gap-2">
+        <input type="checkbox" name="appointment[isAvailable]" <%= admin.dashboard.setting.appointment.isAvailable?'checked':'' %> class="toggle toggle-sm">
+        <div>
+          <h1 class="text-lg font-bold mb-1 leading-none">Is appointment available</h1>
+          <p class="text-base-content/25 text-sm leading-none">This will be the status if the date is dependent.</p>
+      
+        </div>
+      </div>
+      
+      <div class="divider my-4"></div>
+      <h1 class="text-lg font-bold mb-1 leading-none">Weekly status</h1>
+      <p class="text-base-content/25 mb-3 text-sm leading-none">This will be the status if the date is dependent.</p>
+      <ul class="flex flex-wrap gap-5 ">
+        <% for(let day = 0;day < 7;day++){ %>
+          <%
+            const dayName= ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][day]
+          %>
+          <li >
+            <label class="flex items-center gap-1 text-sm">
+              <input type="checkbox"  class="toggle toggle-sm" name="appointment[defaultWeekdayAppointmentStatus][_<%=day%>]" <%= admin.dashboard.setting.appointment.defaultWeekdayAppointmentStatus[day]?'checked':'' %> />
+              <%= dayName %>
+            </label>
+          <li>
+        <% } %>
+      </ul>
+      <div class="divider my-4"></div>
+      
+      <h1 class="text-lg font-bold mb-1 leading-none">Range of apppointment</h1>
+      <p class="text-base-content/25 mb-3 text-sm leading-none">What are the date can a user set his/her appointment.</p>
+      <label class="form-control w-full max-w-xs">
+        <div class="label">
+          <span class="label-text">Min day</span>
+        </div>
+        <input type="number" placeholder="Type here" name="appointment[range][min]" value="<%= admin.dashboard.setting.appointment.range.min %>" class="input input-bordered w-full max-w-xs" />
+      </label>
+      <label class="form-control w-full max-w-xs">
+        <div class="label">
+          <span class="label-text">Max day</span>
+        </div>
+        <input type="number" placeholder="Type here" name="appointment[range][max]" value="<%= locals.admin.dashboard.setting.appointment.range.max %>"  class="input input-bordered w-full max-w-xs" />
+      </label>
+      <div class="divider my-4"></div>
+      
+      <h1 class="text-lg font-bold mb-1 leading-none">Time option</h1>
+      <p class="text-base-content/25 mb-3 text-sm leading-none">Maximum visitor of each time(1-20).</p>
+      <ul class="grid grid-cols-4 gap-1">
+        <% for(const [time,value] of Object.entries(admin.dashboard.setting.appointment.defaultTimeOptions)){ %>
+          <li>
+            <% 
+              let timeFormat = new Date();
+              (timeFormat).setHours(...((time.split(':')).map(el=>parseInt(el))));
+            %>
+            <label class="form-control w-full">
+              <div class="label">
+                <span class="label-text leading-none"><%= timeFormat.toLocaleTimeString() %></span>
+              </div>
+              <input type="number" min="0" max="20" placeholder="Type here" name="appointment[defaultTimeOptions][<%= time %>][maxVisitors]" value="<%= value.maxVisitors %>"  class="input input-bordered w-full" />
+            </label>
+          </li>
+        <% } %>
+      </ul>
+      
+      <div class="divider my-4"></div>
+      <div class="flex justify-end">
+        <button class="btn btn-success px-4 ">Save setting</button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,145 @@
+
+<div class="w-full max-w-7xl mx-auto" x-data="{action:''}" >
+
+    <div class="flex w-full md:flex-row flex-col justify-between md:items-center   gap-2 mb-3 p-2 bg-base-300 rounded-md">
+
+        <form action="/admin/users/input/srch" method="POST" class="flex items-center  gap-2 m-0   w-full md:max-w-xs  ">
+            <label class="input">
+                <svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke-linejoin="round" stroke-linecap="round" stroke-width="2.5" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></g></svg>
+                <input type="search" class="grow" value="<%= admin.users.input.srch %>"  placeholder="Search email"  
+                name="srch" />
+                <kbd class="kbd kbd-sm">ctrl</kbd>
+                <kbd class="kbd kbd-sm">K</kbd>
+              </label>
+          
+        </form>
+        <div class="flex items-center  gap-2    w-full md:max-w-xs  ">
+            
+            <select x-model="action" class="select border border-base-300 w-full">
+                <option value="/" selected="selected" >--Select action--</option>
+                <option value="/admin/users/delete"  >Delete selected account</option>
+                <option value="/admin/users/enable/admin">Enable admin</option>
+                <option value="/admin/users/disable/admin">Disable admin</option>
+                <option value="/admin/users/enable/appointment">Enable appointment</option>
+                <option value="/admin/users/disable/appointment">Disable appointment</option>
+                
+                <option value="/" selected="selected" >--Assign a role--</option>
+                <% for(const permissionName of admin.users.permissions){ %>
+                    <option value="/admin/users/role/<%= permissionName %>"><%= permissionName %></option>
+                <% } %>
+            </select>
+            <button type="submit" class="btn bg-base-100 border border-base-300 btn-square" x-on:click="$dispatch('send-selected-users')">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                    </svg>
+                    
+            </button>
+        
+        </div>
+    </div>
+    
+    <% if(Object.keys( admin.users.users).length > 0){ %>
+        <form x-bind:action="action" method="POST" x-on:send-selected-users.window="$el.submit()"  class="bg-base-100 rounded-box border border-base-300 overflow-x-auto" x-data="{slctdAcct:0}">
+            <table class="w-full table table-sm">
+                <thead>
+                    <tr>
+                        <th>
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" class="checkbox checkbox-sm" x-bind:checked="slctdAcct === <%= admin.users.users.length %>"  x-on:change=" document.getElementsByName('chosenUsers[]').forEach(ch => ch.checked = $el.checked)">
+                                
+                                account
+                            </div>
+                        </th>
+                        <th class="text-end">Appointment</th>
+                        <th class="text-end">Join at</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% for(const user of admin.users.users){ %>
+                        
+                        <tr>
+                            <td>
+                                <div class="flex  gap-3 ">
+                                    <input type="checkbox" name="slctdUsers[]" x-on:change="if($el.checked){slctdAcct++;}else{slctdAcct--;}"  value="<%= user.googleId %>" class="checkbox checkbox-sm">
+                                    
+                                    <div class="avatar">
+                                        <div class="mask mask-squircle h-11 w-11">
+                                            <img
+                                            src="<%= user.picture  %>"
+                                            alt="account profile" />
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-col justify-center">
+                                        <p class=" leading-tight ">
+                                            <span class="font-extrabold "><%= user.name %></span>
+                                            <span
+                                                <% if(user.isAdmin){ %>
+                                                    class="badge badge-xs  badge-success">admin
+                                                <% }else{ %>
+                                                    class="badge badge-xs ">visitor
+                                                <% } %>
+                                               
+                                                <%= ' : ' + (user.roleName || 'no role') %>
+                           
+                                            </span>
+                                        </p>
+                                     
+                                        <p class="text-sm opacity-50"><%= user.email %></p>
+                                    
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-end">
+                                <span
+                                <% if(user.canCreateAppointment){ %>
+                                    class="badge badge-soft badge-success">Enabled
+                                <% }else{ %>
+                                    class="badge badge-soft badge-error">Disabled
+                                <% } %>
+                               
+
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <span class="text-nowrap">
+                                    <%= new Date(user.createdAt).toLocaleDateString('en-US',  {
+                                        weekday: 'long',
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric',
+                                      }) %>
+                                </span>
+                               
+                                
+                            </td>
+                        
+                        
+                        </tr>
+                    <% }  %>
+
+                </tbody>
+            </table>
+        </form>
+        
+       
+    
+    <% } %>
+    <form method="post" x-data="{page:<%= admin.users.input.page %>}" action="/admin/users/input/page" class="flex items-center gap-3 justify-end">
+        <input type="hidden" name="page" x-model="page">
+        <button type="submit" x-on:click="page = Math.max(1,page-1)" class="btn  btn-square  bg-base-100 " >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+            </svg>
+            
+        </button>
+        <div class="btn btn-square btn-ghost">
+            <%= admin.users.input.page %>
+        </div>
+        <button type="submit"  x-on:click="page = page+1" class="btn   btn-square bg-base-100 ">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+            </svg>
+            
+        </button>
+    </form> 
+</div>

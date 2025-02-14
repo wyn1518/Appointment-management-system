@@ -1,0 +1,164 @@
+
+<div class="w-full max-w-7xl mx-auto" x-data="{action:''}" >
+
+    <div class="flex w-full md:flex-row flex-col justify-between md:items-center   gap-2 mb-3 p-2 bg-base-300 rounded-md ">
+
+        <form action="/admin/images/input/srch" method="POST" class="flex items-center  gap-2 m-0   w-full md:max-w-xs  ">
+            <label class="input input-bordered flex w-full items-center gap-2 ">
+                <input type="text" class="grow" placeholder="Search title" name="srch" value="<%= admin.images.input.srch %>" />
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 16 16"
+                    fill="currentColor"
+                    class="h-4 w-4 opacity-70">
+                    <path
+                    fill-rule="evenodd"
+                    d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
+                    clip-rule="evenodd" />
+                </svg>
+            </label>
+        </form>
+        <div class="flex items-center  gap-2 justify-end   w-full md:max-w-xs  ">
+        
+            <select x-model="action" class="select border border-base-300 w-full  ">
+                <option value="/" selected="selected" >--Select action--</option>
+                <option value="/admin/images/delete"  >Delete selected account</option>
+                <option value="/admin/images/update/enable/privacy">Set privacy to public</option>
+                
+                <option value="/admin/images/update/disable/privacy">Set privacy to private</option>
+            </select>
+            <button type="submit"  class="  btn bg-base-100 border border-base-300 btn-square" x-on:click="$dispatch('send-selected-images')">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                    </svg>
+                    
+            </button>
+            <button type="submit" class="btn bg-base-100 border border-base-300 btn-square" onclick="createImageModal.showModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                    
+                    
+            </button>
+        </div>
+    </div>
+    <div class="overflow-x-auto mb-3">
+        <ul class="flex items-center  gap-2 ">
+            <% for(let tag  of admin.images.tags){ %>
+                <li>
+                    <a href="?tag=<%= tag %>" class="btn  btn-ghost btn-sm min-w-max  <%= tag==admin.images.slctdTag?'bg-base-100':'' %>">
+                        <%= tag || 'select all' %>
+                    </a>
+                </li>        
+            <% } %>
+          </ul>
+    </div>
+    
+    <form x-bind:action="action" method="POST" x-on:send-selected-images.window="$el.submit()" class="grid  grid-cols-[repeat(auto-fill,minmax(250px,1fr))] bg-base-200  gap-4  mx-auto ">
+       
+        <% for(const image of admin.images.images){ %>
+            <div class="  grid grid-cols-1   bg-base-100 rounded-box border border-base-300 p-1 overflow-clip ">
+                <button x-on:click.prevent.stop="$dispatch('set-edit-modal', {imgUrl:'/image/<%= image.path %>',title:'<%= image.title %>',description:`<%= image.description %>`,isPublic:<%= image.isPublic  %>,tags:'<%= image.tags %>',id:<%= image.id %>});">
+                    
+                    <img src="/image/<%= image.path %>" loading="lazy" alt="" class="w-full h-48 object-cover rounded-box"> 
+                </button>
+                   
+                <label class=" py-2 px-4">
+                    <div class="flex  items-center gap-2">     
+                        <input type="checkbox"  class="checkbox checkbox-sm  " name="slctdImages[]" value="<%= image.path %>"/>
+                        <span class="truncate text-ellipsis overflow-hidden w-full  font-bold" ><%= image.title %></span>
+                        
+                    </div>
+                    <span class="text-xs break-words" ><%= image.humanizeCreatedAt %> | <%= (image.isPublic ? "public":"private") %></span>                              
+
+                </label>     
+            </div>  
+        <% } %>
+    </form>
+</div>
+
+<dialog id="createImageModal" class="modal">
+    <div class="modal-box w-fit">
+        <form method="dialog">
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                  </svg>
+                  
+            </button>
+        </form>
+        <h3 class="text-lg font-bold">Uploading image</h3>
+        <form action="/admin/images/upload" enctype="multipart/form-data" method="POST">
+            
+            <fieldset class="fieldset">
+                <legend class="fieldset-legend">Pick an image</legend>
+                <input type="file" name="image" class="file-input" />
+              </fieldset>
+            <fieldset class="fieldset">
+                <legend class="fieldset-legend">Title</legend>
+                <input type="text" class="input" name="title" placeholder="Type here" />
+            </fieldset>
+            <fieldset class="fieldset">
+                <legend class="fieldset-legend">Description</legend>
+                <textarea name="description" class="textarea h-24" ></textarea>
+            </fieldset>
+            <fieldset class="fieldset">
+                <legend class="fieldset-legend">Tags</legend>
+                <textarea name="tags" class="textarea h-24" ></textarea>
+            </fieldset>
+            <div class="form-control mb-3">
+                <label class="label cursor-pointer flex justify-between w-full ">
+                  <span class="label-text text-sm">Is public</span>
+                  <input type="checkbox" name="isPublic" checked="checked" class="checkbox checkbox-sm" />
+                </label>
+            </div>
+            <div class="flex justify-end">
+                <button type="submit" class="btn btn-success">Upload new image</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+
+<dialog x-data="{imgUrl:'',title:'',description:'',tags:[],isPublic:false,id:null}" class="modal" x-on:set-edit-modal.window="$el.showModal();imgUrl=$event.detail.imgUrl;title=$event.detail.title;description=$event.detail.description;tags=$event.detail.tags;isPublic=$event.detail.isPublic;id=$event.detail.id;">
+    <div class="modal-box overflow-y-auto max-h-[90vh]">
+        <form method="dialog">
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                  </svg>
+                  
+            </button>
+        </form>
+        
+        <h3 class="text-lg font-bold mb-3">Edit</h3>
+        <form action="/admin/images/update"  method="POST">
+            <input type="hidden" name="id" x-model="id">
+            <div class="w-full flex justify-center">
+                
+                <img x-bind:src="imgUrl" alt="" class=" object-cover h-72 rounded-box">
+            </div>
+            <fieldset class="fieldset w-full">
+                <legend class="fieldset-legend">Title</legend>
+                <input type="text" class="input w-full" name="title" x-model="title" placeholder="Type here" />
+            </fieldset>
+            <fieldset class="fieldset">
+                <legend class="fieldset-legend">Description</legend>
+                <textarea name="description"  class="textarea h-24  w-full" x-model="description"></textarea>
+            </fieldset>
+            <fieldset class="fieldset">
+                <legend class="fieldset-legend">Description</legend>
+                <textarea name="tags" x-model="tags"  name="description" class="textarea h-24  w-full" ></textarea>
+            </fieldset>
+            <div class="form-control mb-3">
+                <label class="label cursor-pointer flex justify-between w-full ">
+                  <span class="label-text text-sm">Is public</span>
+                  <input type="checkbox" name="isPublic" x-model="isPublic" checked="checked" class="checkbox checkbox-sm" />
+                </label>
+            </div>
+            <div class="flex justify-end">
+                <button type="submit" class="btn btn-success">Save updated info</button>
+            </div>
+        </form>
+    </div>
+</dialog>
